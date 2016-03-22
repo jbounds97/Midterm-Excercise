@@ -4,7 +4,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
+import exceptions.PersonException;;
 /*
  * comment
  */
@@ -17,7 +17,8 @@ public abstract class Person implements java.io.Serializable {
 	private String address;
 	private String phone_number;
 	private String email_address;
-
+	private Date currentDate = new Date();
+	
 	public String getFirstName() {
 		return FirstName;
 	}
@@ -76,7 +77,10 @@ public abstract class Person implements java.io.Serializable {
 	public String getEmail() {
 		return email_address;
 	}
-
+	
+	public Date getCurrentDate(){
+		return currentDate;
+	}
 	/*
 	 * Constructors No Arg Constructor
 	 */
@@ -88,14 +92,39 @@ public abstract class Person implements java.io.Serializable {
 	 * Constructors Constructor with arguments
 	 */
 
+	@SuppressWarnings("deprecation")
 	public Person(String FirstName, String MiddleName, String LastName,
-			Date DOB, String Address, String Phone_number, String Email)
+			Date DOB, String Address, String Phone_number, String Email) throws PersonException
 	{
 		this.FirstName = FirstName;
 		this.MiddleName = MiddleName;
 		this.LastName = LastName;
-		this.setDOB(DOB);
+		
+		//Make sure that the person is not more than 100 years old.
+		//If not, throw new PersonException
+		
+		//Date is adding 1900 to year so I subtract 1900
+		//System.out.println(currentDate.getMonth()+"\n"+ DOB.getMonth());
+		if((currentDate.getYear() - DOB.getYear()) > 100)
+			throw new PersonException(this);
+		if((currentDate.getYear() - DOB.getYear()  == 100)){	
+			if(currentDate.getMonth() > DOB.getMonth())
+				throw new PersonException(this);
+			if(currentDate.getMonth() == DOB.getMonth()){
+				if(currentDate.getDate() > DOB.getDate())
+					throw new PersonException(this);
+			}			
+		}
+		this.DOB = DOB;
 		this.address = Address;
+		
+		//Ensure that phone number entered is valid, if not throw Person Exception
+		String regex = "^\\(?([0-9]{3})\\)?[-.\\s]?([0-9]{3})[-.\\s]?([0-9]{4})$";
+		Pattern pattern = Pattern.compile(regex);
+		Matcher matcher = pattern.matcher(Phone_number);
+		if(matcher.matches() == false)
+			throw new PersonException(this);
+		
 		this.setPhone(Phone_number);
 		this.email_address = Email;
 		
